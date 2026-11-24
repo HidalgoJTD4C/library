@@ -1,58 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Library Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Una aplicación web y API RESTful desarrollada en Laravel para la gestión de una biblioteca. Permite realizar operaciones CRUD sobre libros y categorías, aplicando validaciones estrictas y reglas de negocio.
 
-## About Laravel
+## Tecnologías Utilizadas
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Framework:** Laravel (v13)
+- **Lenguaje:** PHP (8.3+)
+- **Base de Datos:** PostgreSQL
+- **Frontend:** Blade + Bootstrap 5 (vía CDN)
+- **Testing:** Pest PHP
+- **Arquitectura:** MVC, API Resources, Form Requests
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Características Principales
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Interfaz Web:** Gestión visual de libros y categorías utilizando Blade y Bootstrap.
+- **API RESTful:** Endpoints para consumir los datos en formato JSON.
+- **CRUD de Libros:** Listar, crear, editar y eliminar libros.
+- **Filtrado de Libros:** Búsqueda por categoría mediante parámetros de consulta (query params).
+- **Gestión de Categorías:** Creación y eliminación de categorías con nombres únicos.
+- **Reglas de Negocio:**
+  - No se permite eliminar una categoría si tiene libros asociados (devuelve `HTTP 409 Conflict`).
+  - Validación estricta de datos en el servidor (título mínimo de 3 caracteres, año válido, categoría existente, etc.).
+- **Respuestas JSON Limpias:** Uso de API Resources para estructurar la salida de datos (sin timestamps innecesarios).
 
-## Learning Laravel
+## Requisitos Previos
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP >= 8.3
+- Composer
+- PostgreSQL
+- Node.js y NPM (opcional, solo si se desea compilar assets localmente)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Instalación y Configuración
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Sigue estos pasos para ejecutar el proyecto en un entorno local:
 
-## Agentic Development
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/HidalgoJTD4C/library.git
+   cd library
+   ```
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+2. **Instalar las dependencias de PHP:**
+   ```bash
+   composer install
+   ```
+
+3. **Configurar las variables de entorno:**
+   Copiar el archivo de ejemplo y generar la clave de la aplicación.
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Configurar la base de datos:**
+   Abrir el archivo `.env` y actualizar las credenciales de PostgreSQL:
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=library_db
+   DB_USERNAME=tu_usuario
+   DB_PASSWORD=tu_contraseña
+   ```
+
+5. **Crear las bases de datos en PostgreSQL:**
+   Es necesario crear una base de datos para desarrollo y otra para las pruebas automatizadas.
+   ```sql
+   CREATE DATABASE library_db;
+   CREATE DATABASE library_testing;
+   ```
+
+6. **Ejecutar las migraciones y seeders:**
+   Esto creará las tablas y poblará la base de datos con datos de prueba (categorías y libros aleatorios).
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+
+7. **Iniciar el servidor de desarrollo:**
+   ```bash
+   php artisan serve
+   ```
+   La aplicación web estará disponible en `http://127.0.0.1:8000`.
+
+## Ejecución de Pruebas
+
+El proyecto cuenta con una suite de pruebas automatizadas (Feature Tests) que cubren la API, las validaciones y las reglas de negocio.
+
+Para ejecutar las pruebas, primero debes crear el archivo de entorno para testing (`.env.testing`). Este archivo no se sube al repositorio por seguridad. Puedes crearlo copiando tu archivo `.env` actual:
 
 ```bash
-composer require laravel/boost --dev
+cp .env .env.testing
+```
+Luego, abre el archivo .env.testing recién creado y asegúrate de cambiar el nombre de la base de datos para que apunte a la de pruebas:
 
-php artisan boost:install
+```env
+DB_DATABASE=library_testing
+```
+Finalmente, ejecuta la suite de pruebas con el siguiente comando:
+
+```bash
+./vendor/bin/pest
+```
+O si lo prefieres, usando Artisan:
+
+```bash
+php artisan test
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Las pruebas utilizan transacciones (`RefreshDatabase`) para garantizar que la base de datos quede limpia después de cada test.
 
-## Contributing
+## Documentación de la API
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+La API está disponible bajo el prefijo `/api`. Todas las respuestas se devuelven en formato JSON.
 
-## Code of Conduct
+### Libros
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- `GET /api/books` - Lista todos los libros.
+- `GET /api/books?category={id}` - Filtra los libros por el ID de categoría especificado.
+- `POST /api/books` - Crea un nuevo libro.
+- `PUT /api/books/{id}` - Actualiza un libro existente.
+- `DELETE /api/books/{id}` - Elimina un libro.
 
-## Security Vulnerabilities
+**Ejemplo de Payload para `POST /api/books`:**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```json
+{
+  "title": "Cien años de soledad",
+  "author": "Gabriel García Márquez",
+  "description": "Novela cumbre del realismo mágico.",
+  "published_year": 1967,
+  "category_id": 1
+}
+```
 
-## License
+### Categorías
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `GET /api/categories` - Lista todas las categorías junto con el conteo de libros asociados.
+- `POST /api/categories` - Crea una nueva categoría. El nombre debe ser único.
+- `DELETE /api/categories/{id}` - Elimina una categoría. Si la categoría tiene libros asociados, la API devolverá un error `HTTP 409 (Conflict)`.
+
+**Ejemplo de Payload para `POST /api/categories`:**
+
+```json
+{
+  "name": "Ciencia Ficción"
+}
+```
+
+## Estructura del Proyecto
+
+- `app/Http/Controllers/`: Controladores de lógica de negocio (`BookController`, `CategoryController`).
+- `app/Http/Requests/`: Validaciones encapsuladas (`StoreBookRequest`, `StoreCategoryRequest` y `UpdateBookRequest`).
+- `app/Http/Resources/`: Transformación de datos para la API (`BookResource`, `CategoryResource`).
+- `app/Models/`: Modelos Eloquent (`Book`, `Category`).
+- `database/migrations/`: Estructura de las tablas.
+- `resources/views/`: Vistas de la interfaz web (Blade).
+- `routes/web.php`: Rutas de la interfaz web.
+- `routes/api.php`: Rutas de la API RESTful.
+- `tests/Feature/`: Pruebas automatizadas (`BookTest`, `CategoryTest`).
