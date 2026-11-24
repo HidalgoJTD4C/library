@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Resources\BookResource;
 
 class BookController extends Controller
 {
@@ -24,7 +25,7 @@ class BookController extends Controller
         $books = $query->latest()->get();
 
         if ($request->is('api/*')) {
-            return response()->json($books);
+             return BookResource::collection($books);
         }
 
         $categories = Category::orderBy('name')->get();
@@ -50,7 +51,9 @@ class BookController extends Controller
         $book = Book::create($request->validated());
 
         if ($request->is('api/*')) {
-            return response()->json($book->load('category'), 201);
+             return (new BookResource($book->load('category')))
+        ->response()
+        ->setStatusCode(201);
         }
 
         return redirect()
@@ -78,7 +81,7 @@ class BookController extends Controller
         $book->update($request->validated());
 
         if ($request->is('api/*')) {
-            return response()->json($book->load('category'));
+             return new BookResource($book->load('category'));
         }
 
         return redirect()

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Resources\CategoryResource;
+
 
 class CategoryController extends Controller
 {
@@ -16,7 +18,7 @@ class CategoryController extends Controller
         $categories = Category::withCount('books')->orderBy('name')->get();
 
         if ($request->is('api/*')) {
-            return response()->json($categories);
+             return CategoryResource::collection($categories);
         }
 
         return view('categories.index', compact('categories'));
@@ -30,7 +32,9 @@ class CategoryController extends Controller
         $category = Category::create($request->validated());
 
         if ($request->is('api/*')) {
-            return response()->json($category, 201);
+            return (new CategoryResource($category))
+        ->response()
+        ->setStatusCode(201);
         }
 
         return redirect()
